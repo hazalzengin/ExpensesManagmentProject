@@ -1,0 +1,299 @@
+﻿@model List<Expenses.Model.ExpenseModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Giderler Listesi</h1>
+
+<button id="addExpenseBtn" class="btn btn-success">
+    &#43;
+  
+</button>
+<pre></pre>
+@* <p>
+    <a asp-action="ExpenseData" class="btn btn-primary">Yeni Gider</a>
+</p> *@
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+</head>
+
+
+<form asp-controller="Expenses" asp-action="Index" method="get">
+    <div class="form-group">
+        <input type="text" name="searching" class="form-control" placeholder="Search...">
+    </div>
+    <pre></pre>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Sil</th>
+            <th>ID</th>
+            <th>Kategori</th>
+            <th>Alan</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var expense in Model)
+        {
+            <tr>
+                <td>
+                    <button class="btn btn-primary view-expense" data-id="@expense.Id" data-category="@expense.Category" data-title="@expense.Title">
+                        ✎
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-primary update-expense" data-id="@expense.Id" data-category="@expense.Category" data-title="@expense.Title" data-time="@expense.ExpenseDate" data-spend="@expense.moneyspent">
+                        Güncelle
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-danger delete-expense" data-id="@expense.Id">
+                        Sil
+                    </button>
+                </td>
+
+                <td>@expense.Id</td>
+                <td>@expense.Category</td>
+                <td>@expense.Title</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="updateExpenseModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Gideri Güncelle</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="updateExpenseForm">
+                    <input type="hidden" id="updateExpenseId" name="id">
+                    <div class="form-group">
+                        <label for="updateCategory">Kategori:</label>
+                        <input type="text" class="form-control" id="updateCategory" name="category">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateTitle">Başlık:</label>
+                        <input type="text" class="form-control" id="updateTitle" name="title">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateExpenseDate">Gider Tarihi:</label>
+                        <input type="date" class="form-control" id="updateExpenseDate" name="expenseDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateMoneySpent">Harcama Miktarı:</label>
+                        <input type="number" class="form-control" id="updateMoneySpent" name="moneySpent">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="updateExpenseBtn">Güncelle</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="expenseModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Selected Expense</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="expenseId"></span></p>
+                <p><strong>Kategori:</strong> <span id="expenseCategory"></span></p>
+                <p><strong>Başlık:</strong> <span id="expenseTitle"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="addExpenseModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add New Expense</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addExpenseForm">
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <input type="text" class="form-control" id="category" name="category">
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" class="form-control" id="title" name="title">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDate">Expense Date:</label>
+                        <input type="date" class="form-control" id="expenseDate" name="expenseDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="moneySpent">Money Spent:</label>
+                        <input type="number" class="form-control" id="moneySpent" name="moneySpent">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary"  id="saveExpenseBtn">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Başarı!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Yeni gideriniz başarıyla eklenmiştir.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // View expense modal
+            $(".view-expense").click(function () {
+                var id = $(this).data("id");
+                var category = $(this).data("category");
+                var title = $(this).data("title");
+                $("#expenseId").text(id);
+                $("#expenseCategory").text(category);
+                $("#expenseTitle").text(title);
+                $("#expenseModal").modal("show");
+            });
+
+            $("#addExpenseBtn").click(function () {
+                $("#addExpenseModal").modal("show");
+            });
+
+            $(".update-expense").click(function () {
+                var id = $(this).data("id");
+                var category = $(this).data("category");
+                var title = $(this).data("title");
+                var expenseDate = $(this).data("time");
+                var moneySpent = $(this).data("spend");
+
+                $("#updateExpenseId").val(id);
+                $("#updateCategory").val(category);
+                $("#updateTitle").val(title);
+                $("#updateExpenseDate").val(expenseDate);
+                $("#updateMoneySpent").val(moneySpent);
+
+                $("#updateExpenseModal").modal("show");
+            });
+
+            $("#updateExpenseBtn").click(function () {
+                var id = $("#updateExpenseId").val();
+                var category = $("#updateCategory").val();
+                var title = $("#updateTitle").val();
+                var expenseDate = $("#updateExpenseDate").val();
+                var moneySpent = $("#updateMoneySpent").val();
+
+                var expenseData = {
+                    Id: id,
+                    Category: category,
+                    Title: title,
+                    ExpenseDate: expenseDate,
+                    moneyspent: moneySpent
+                };
+
+                $.ajax({
+                    url: "/Expenses/UpdateExpense",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(expenseData),
+                    success: function () {
+                        toastr.success('Expense updated successfully.');
+                        $("#updateExpenseModal").modal("hide");
+                        location.reload(); 
+                    },
+                    error: function () {
+                        toastr.error('An error occurred while updating the expense.');
+                    }
+                });
+            });
+            $("#saveExpenseBtn").click(function () {
+                var category = $("#category").val();
+                var title = $("#title").val();
+                var expenseDate = $("#expenseDate").val();
+                var moneySpent = $("#moneySpent").val();
+
+                var expenseData = {
+                    Title: title,
+                    moneyspent: moneySpent,
+                    ExpenseDate: expenseDate,
+                    Category: category
+                };
+
+                $.ajax({
+                    url: "/Expenses/ExpenseData",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(expenseData),
+                    success: function (data) {
+                        console.log("Expense successfully saved.");
+                        $("#expenseId").text(data.id);
+                        $("#expenseCategory").text(data.category);
+                        $("#expenseTitle").text(data.title);
+                        $("#expenseModal").modal("show");
+                    },
+                    error: function () {
+                        toastr.error('An error occurred while saving the expense.');
+                    }
+                });
+
+                $("#successModal").modal("show");
+                $("#addExpenseModal").modal("hide");
+            });
+
+            $(".delete-expense").click(function () {
+                var id = $(this).data("id");
+
+                if (confirm("Are you sure you want to delete this expense?")) {
+                    $.ajax({
+                        url: "/Expenses/DeleteExpense",
+                        type: "POST",
+                        data: { id: id },
+                        success: function () {
+                            toastr.success('Expense deleted successfully.');
+                            location.reload();
+                        },
+                        error: function () {
+                            toastr.error('An error occurred while deleting the expense.');
+                        }
+                    });
+                }
+            });
+
+        });
+    </script>
+}

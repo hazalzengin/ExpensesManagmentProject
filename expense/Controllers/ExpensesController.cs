@@ -2,8 +2,8 @@
 using Expenses.DataAccess.Repositories;
 using Expenses.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,85 +18,118 @@ namespace Expenses.Controllers
             _expense = expense;
         }
 
-        public IActionResult Index(string searching)
+        public IActionResult Index(string searching, int pageNumber = 1, int pageSize = 10)
         {
-            List<ExpenseModel> lists = new List<ExpenseModel>();
+            IEnumerable<ExpenseModel> filteredExpenses;
 
             if (string.IsNullOrEmpty(searching))
             {
-                lists = _expense.GetAllExpenses().ToList();
+                filteredExpenses = _expense.GetAllExpenses()
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize);
             }
             else
             {
-                lists = _expense.Search(searching).ToList();
+                filteredExpenses = _expense.Search(searching)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize);
             }
-            return View(lists);
+
+            ViewBag.TotalPages = (int)Math.Ceiling(_expense.GetAllExpenses().Count() / (double)pageSize);
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.HasPreviousPage = (pageNumber > 1);
+            ViewBag.HasNextPage = (pageNumber < ViewBag.TotalPages);
+
+            return View(filteredExpenses.ToList());
         }
+
 
         [HttpGet]
         public IActionResult ExpenseData(int id)
         {
-            ExpenseModel model = new ExpenseModel();
-            if (id > 0)
+            if (id <= 0)
             {
-                model = _expense.GetExpenseByID(id);
+                return BadRequest("Invalid ID");
             }
-            return PartialView("Index", model);
+
+            ExpenseModel model = _expense.GetExpenseByID(id);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_ExpenseDataPartial", model);
         }
 
         [HttpPost]
-
         public IActionResult ExpenseData([FromBody] ExpenseModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (!string.IsNullOrEmpty(model.Category))
+                return BadRequest(ModelState);
+            }
+
+            if (string.IsNullOrEmpty(model.Category))
+            {
+                ModelState.AddModelError("Category", "Category is required.");
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                if (model.Id > 0)
                 {
-                    if (model.Id > 0)
-                    {
-                        _expense.Update(model);
-                    }
-                    else
-                    {
-                        _expense.Add(model);
-
-                    }
-
+                    _expense.Update(model);
                 }
                 else
                 {
-                    ModelState.AddModelError("Category", "Category is required.");
+                    _expense.Add(model);
                 }
+
+                return PartialView("_ExpenseDataPartial", model);
             }
-            return PartialView("Index", model);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         [HttpPost]
         public IActionResult UpdateExpense([FromBody] ExpenseModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
             {
                 _expense.Update(model);
+                return Json(new { success = true });
             }
-            return Json(new { success = true });
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
-
 
         [HttpPost]
         public IActionResult DeleteExpense(int id)
         {
             try
             {
-             
                 _expense.Delete(id);
                 return Json(new { success = true });
             }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "Failed to delete due to database error.");
+            }
             catch (Exception ex)
             {
-               
-                return Json(new { success = false, errorMessage = ex.Message });
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-
     }
 }

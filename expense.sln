@@ -3,11 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "expense", "expense\expense.csproj", "{465A67A9-E0C9-4CEE-A0F2-891D1DFFB619}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "expense", "expense\expense.csproj", "{465A67A9-E0C9-4CEE-A0F2-891D1DFFB619}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expenses.Models", "Expenses.Models\Expenses.Models.csproj", "{352CF8F1-06B9-477D-A3D4-3BEE032A3C7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Expenses.Models", "Expenses.Models\Expenses.Models.csproj", "{352CF8F1-06B9-477D-A3D4-3BEE032A3C7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expenses.DataAccess", "Expenses.DataAccess\Expenses.DataAccess.csproj", "{C98716DE-27F2-4206-BE14-24474F762FAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Expenses.DataAccess", "Expenses.DataAccess\Expenses.DataAccess.csproj", "{C98716DE-27F2-4206-BE14-24474F762FAE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "paged", "paged", "{6F395D5F-74A1-47B0-970D-FB05A4060A00}"
+	ProjectSection(SolutionItems) = preProject
+		LinqExtensions.cs = LinqExtensions.cs
+		pagedresult.cs = pagedresult.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

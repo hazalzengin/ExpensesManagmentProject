@@ -18,6 +18,7 @@ namespace Expenses.Model
         public DateTime ExpenseDate { get; set; }
         [Required]
         public string? Category { get; set; }
+       
 
 
     }

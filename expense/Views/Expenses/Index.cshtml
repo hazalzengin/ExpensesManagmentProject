@@ -8,12 +8,8 @@
 
 <button id="addExpenseBtn" class="btn btn-success">
     &#43;
-
 </button>
 <pre></pre>
-@* <p>
-    <a asp-action="ExpenseData" class="btn btn-primary">Yeni Gider</a>
-</p> *@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -33,10 +29,12 @@
     <thead>
         <tr>
             <th></th>
-            <th>Sil</th>
+            <th></th>
+            <th></th>
             <th>ID</th>
             <th>Kategori</th>
             <th>Alan</th>
+            <th>Fiyat</th>
         </tr>
     </thead>
     <tbody>
@@ -44,7 +42,8 @@
         {
             <tr>
                 <td>
-                    <button class="btn btn-primary view-expense" data-id="@expense.Id" data-category="@expense.Category" data-title="@expense.Title">
+                    <button class="btn btn-primary view-expense" data-id="@expense.Id" data-category="@expense.Category" data-title="@expense.Title"
+                            data-spend="@expense.moneyspent" data-date="@expense.ExpenseDate">
                         ✎
                     </button>
                 </td>
@@ -62,6 +61,7 @@
                 <td>@expense.Id</td>
                 <td>@expense.Category</td>
                 <td>@expense.Title</td>
+                <td>@expense.moneyspent</td>
             </tr>
         }
     </tbody>
@@ -114,6 +114,8 @@
                 <p><strong>ID:</strong> <span id="expenseId"></span></p>
                 <p><strong>Kategori:</strong> <span id="expenseCategory"></span></p>
                 <p><strong>Başlık:</strong> <span id="expenseTitle"></span></p>
+                <p><strong>Tarih:</strong> <span id="expenseDate"></span></p>
+                <p><strong>Miktar:</strong> <span id="expenseSpent"></span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -176,6 +178,7 @@
         </div>
     </div>
 </div>
+
 <div>
     @* Önceki sayfa düğmesi *@
     @if (ViewBag.HasPreviousPage)
@@ -204,9 +207,13 @@
                 var id = $(this).data("id");
                 var category = $(this).data("category");
                 var title = $(this).data("title");
+                var date = $(this).data("date");
+                var spent = $(this).data("spend");
                 $("#expenseId").text(id);
                 $("#expenseCategory").text(category);
                 $("#expenseTitle").text(title);
+                $("#expenseDate").text(date);
+                $("#expenseSpent").text(spent);
                 $("#expenseModal").modal("show");
             });
 
@@ -237,13 +244,13 @@
                 var expenseDate = $("#updateExpenseDate").val();
                 var moneySpent = $("#updateMoneySpent").val();
 
-                var expenseData = {
-                    Id: id,
-                    Category: category,
-                    Title: title,
-                    ExpenseDate: expenseDate,
-                    moneyspent: moneySpent
-                };
+                var expenseData = {};
+                if (category.trim() !== "") expenseData.Category = category;
+                if (title.trim() !== "") expenseData.Title = title;
+                if (expenseDate.trim() !== "") expenseData.ExpenseDate = expenseDate;
+                if (moneySpent.trim() !== "") expenseData.MoneySpent = moneySpent;
+
+                expenseData.Id = id;
 
                 $.ajax({
                     url: "/Expenses/UpdateExpense",
@@ -251,15 +258,17 @@
                     contentType: "application/json",
                     data: JSON.stringify(expenseData),
                     success: function () {
-                        toastr.success('Expense updated successfully.');
+                        alert("Kaydınız başarıyla güncellenmiştir.");
                         $("#updateExpenseModal").modal("hide");
                         location.reload();
                     },
                     error: function () {
-                        toastr.error('An error occurred while updating the expense.');
+                        alert("Kaydınız güncellenemedi.");
                     }
                 });
             });
+
+
             $("#saveExpenseBtn").click(function () {
                 var category = $("#category").val();
                 var title = $("#title").val();
@@ -268,7 +277,7 @@
 
                 var expenseData = {
                     Title: title,
-                    moneyspent: moneySpent,
+                    MoneySpent: moneySpent,
                     ExpenseDate: expenseDate,
                     Category: category
                 };
